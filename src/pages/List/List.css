@@ -1,0 +1,199 @@
+/* ADDED: For the main list container */
+.list-table {
+  /* Har row ke beech mein gap */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* MODIFIED: To make each row a grid */
+.list-table-format {
+  /* Yahaan Grid apply hoga */
+  display: grid;
+
+  /* Grid ko 5 columns mein baantna (Image, Name, Category, Price, Action) */
+  /* Har column ki size adjust karein: 0.5fr chhote columns (Image, Price, Action) aur 2fr bade columns (Name, Category) ke liye */
+  grid-template-columns: 0.5fr 2fr 1fr 1fr 0.5fr;
+
+  align-items: center; /* Items ko vertically center karta hai */
+
+  padding: 12px 15px;
+  border: 1px solid #cacaca;
+  font-size: 13px;
+}
+
+/* EXISTING: Title row ko alag dikhane ke liye */
+.list-table-format.title {
+  background-color: #f9f9f9;
+  padding: 15px; /* Thoda zyada padding de sakte hain */
+}
+
+/* EXISTING */
+.list-table-format img {
+  width: 50px;
+  /* Object fit container ke andar image ko theek se fit karta hai */
+  object-fit: cover;
+}
+
+/* ... baki media query code ... */
+.edit-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.edit-popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-popup-content h3 {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.edit-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+/* --- Action Buttons --- */
+.list-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Simplified Edit Button */
+.edit-btn {
+  background: #4f9cf9;
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.edit-btn:hover {
+  background: #357ae8;
+}
+
+/* Compact Remove Button */
+.remove-btn {
+  background: none;
+  border: none;
+  color: #e3342f;
+  font-size: 16px; /* smaller than before */
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.remove-btn:hover {
+  transform: scale(1.1);
+  color: #c81e1e;
+}
+
+
+/* --- Popup (unchanged) --- */
+.edit-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.edit-popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: scaleUp 0.25s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+/* Force the remove button to stay beside the edit button */
+.list-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  position: relative; /* keep it inside its parent cell */
+}
+
+/* Ensure trash button doesn't float or stick anywhere */
+.remove-btn {
+  position: relative !important;
+  bottom: auto !important;
+  right: auto !important;
+  background: none;
+  border: none;
+  color: #e3342f;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.remove-btn:hover {
+  transform: scale(1.1);
+  color: #c81e1e;
+}
+.list-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.list-remove-btn {
+  background: none;
+  border: none;
+  color: #e3342f;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+  position: relative; /* stays inline beside edit button */
+}
+
+.list-remove-btn:hover {
+  transform: scale(1.1);
+  color: #c81e1e;
+}

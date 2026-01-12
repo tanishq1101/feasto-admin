@@ -1,0 +1,188 @@
+.list-restaurants {
+  width: 100%;
+  padding: 25px;
+}
+
+.list-restaurants h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #222;
+}
+
+.restaurant-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.restaurant-table th,
+.restaurant-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.restaurant-table th {
+  background: #fafafa;
+  font-weight: 600;
+  color: #333;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.edit,
+.delete {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.edit {
+  background: #0077ff;
+  color: white;
+}
+
+.edit:hover {
+  background: #005fcc;
+}
+
+.delete {
+  background: #ff4b4b;
+  color: white;
+}
+
+.delete:hover {
+  background: #d93838;
+}
+
+/* ✅ Edit Popup */
+.edit-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.edit-popup-content {
+  background: white;
+  width: 350px;
+  padding: 25px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.edit-popup-content input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cancel {
+  background: #777;
+  color: white;
+}
+.restaurant-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.restaurant-table th, .restaurant-table td {
+  padding: 14px 10px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.table-img {
+  width: 45px;
+  height: 45px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.actions button {
+  margin-right: 8px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.actions .edit {
+  background: #008cff;
+  color: white;
+}
+
+.actions .delete {
+  background: #ff4b4b;
+  color: white;
+}
+
+/* ✅ Popup Styling */
+.edit-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.edit-popup-content {
+  background: white;
+  padding: 22px;
+  width: 350px;
+  border-radius: 10px;
+  animation: popupFade .25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@keyframes popupFade {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.edit-popup-content input {
+  width: 100%;
+  border: 1px solid #dcdcdc;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.edit-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.edit-buttons .cancel {
+  background: #ddd;
+}

@@ -1,0 +1,78 @@
+.add {
+  width: 70%;
+  margin-left: max(5vw, 25px);
+  margin-top: 50px;
+  color: #6d6d6d;
+  font-size: 16px;
+}
+
+.add form {
+  gap: 20px;
+}
+
+/* Match width with Product Name */
+.add-product-name,
+.add-product-description,
+.add-product-image {
+  width: max(40%, 280px);
+}
+
+.add-product-name input,
+.add-product-description textarea,
+.add-product-image input {
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.add-category-price {
+  display: flex;
+  gap: 30px;
+}
+
+.add-category-price select,
+.add-category-price input {
+  max-width: 120px;
+  padding: 10px;
+}
+
+.add-btn {
+  max-width: 120px;
+  border: none;
+  padding: 10px;
+  background-color: black;
+  color: white;
+  cursor: pointer;
+}
+
+/* Image preview styles remain same */
+.add-img-upload {
+  align-items: center;
+  text-align: center;
+}
+
+.add-img-upload label {
+  width: 160px;
+  height: 160px;
+  border: 2px dashed #bbbbbb;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: #fafafa;
+  transition: 0.3s ease;
+}
+
+.add-img-upload label:hover {
+  border-color: #ff5a5f;
+  background: #fff3f3;
+}
+
+.add-img-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

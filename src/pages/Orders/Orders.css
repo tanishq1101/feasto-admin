@@ -1,0 +1,113 @@
+.order-item {
+  display: grid;
+  grid-template-columns: 0.5fr 2fr 1fr 1fr 1fr;
+  align-items: start;
+  gap: 30px;
+  font-size: 14px;
+  padding: 20px;
+  color: #333333; /* dark professional black instead of gray/red */
+  border: 1px solid #d9534f; /* softened tomato-ish border */
+  border-radius: 8px;
+  background-color: #fff; /* subtle professional background */
+}
+
+.order-item-food,
+.order-item-name {
+  font-weight: 600;
+}
+
+.order-item-name {
+  margin-top: 30px;
+  margin-bottom: 5px;
+}
+
+.order-item-address {
+  margin-bottom: 10px;
+}
+
+.order-item p,
+.order-item span {
+  margin: 2px 0;
+}
+
+.order-item .amount,
+.order-item .items-count {
+  font-size: 16px; /* slightly bigger */
+  font-weight: 700;
+  color: #111111; /* dark black for emphasis */
+}
+
+/* --- Select Status --- */
+.order-item select {
+  background-color: #ffe8e4; /* light reddish background */
+  border: 1px solid tomato;  /* reddish border */
+  width: max(10vw, 120px);
+  padding: 10px;
+  outline: none;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #333333;
+  cursor: pointer;
+}
+
+/* Delivered option stays tomato/red */
+.order-item select option[value="Delivered"] {
+  background-color: tomato;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Other options professional */
+.order-item select option[value="Food Processing"],
+.order-item select option[value="Out for Delivery"] {
+  background-color: #f7f7f7;
+  color: #333333;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1000px) {
+  .order-item {
+    grid-template-columns: 0.5fr 2fr 1fr;
+    padding: 15px 8px;
+    font-size: 12px;
+  }
+  .order-item select {
+    padding: 5px;
+    font-size: 12px;
+  }
+  .order-item img {
+    width: 40px;
+  }
+}
+.order-item {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-bottom: 20px;
+  transition: 0.2s ease;
+}
+
+.order-item:hover {
+  transform: translateY(-2px);
+}
+
+/* 🗑️ Trash button style */
+.remove-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: #3b2f2f; /* dark brown */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s ease;
+}
+
+.remove-btn:hover {
+  background-color: #1a1a1a; /* black hover */
+}

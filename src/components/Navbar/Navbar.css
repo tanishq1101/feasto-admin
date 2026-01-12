@@ -1,0 +1,19 @@
+.navbar {
+  display: flex;
+  justify-content: space-between; /* Logo left, profile right */
+  align-items: center;
+  padding: 10px 4%;
+}
+
+/* Logo on the left — slightly larger now */
+.navbar .logo {
+  width: 100px; /* slightly bigger */
+  cursor: pointer;
+}
+
+/* Profile on the right */
+.navbar .profile {
+  width: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+}
