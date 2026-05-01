@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 import "./listRestaurant.css";
 
-const ListRestaurants = ({ url }) => {
+const ListRestaurants = ({ url, getToken }) => {
   const [restaurants, setRestaurants] = useState([]);
   const [editRestaurant, setEditRestaurant] = useState(null);
   const [updatedData, setUpdatedData] = useState({
@@ -13,12 +14,15 @@ const ListRestaurants = ({ url }) => {
     image: "",
   });
 
+  const getAuthHeaders = async () => ({ headers: { Authorization: `Bearer ${await getToken()}` } });
+
   const load = async () => {
     try {
-      const res = await axios.get(`${url}/api/admin/restaurants/list`);
+      const res = await axios.get(`${url}/api/admin/restaurants/list`, await getAuthHeaders());
       if (res.data.success) setRestaurants(res.data.data);
     } catch (err) {
       console.error("Load error:", err);
+      toast.error(err.response?.data?.message || "Failed to load restaurants");
     }
   };
 
@@ -28,12 +32,17 @@ const ListRestaurants = ({ url }) => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this restaurant?")) return;
-    await axios.delete(`${url}/api/admin/restaurants/delete/${id}`);
-    load();
+    try {
+      await axios.delete(`${url}/api/admin/restaurants/delete/${id}`, await getAuthHeaders());
+      toast.success("Restaurant deleted");
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete");
+    }
   };
 
   const handleEditClick = (restaurant) => {
-    setEditRestaurant(restaurant._id);
+    setEditRestaurant(restaurant.id);
     setUpdatedData({
       name: restaurant.name,
       city: restaurant.city,
@@ -45,9 +54,18 @@ const ListRestaurants = ({ url }) => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    await axios.put(`${url}/api/admin/restaurants/update/${editRestaurant}`, updatedData);
-    setEditRestaurant(null);
-    load();
+    try {
+      await axios.put(
+        `${url}/api/admin/restaurants/update/${editRestaurant}`,
+        updatedData,
+        await getAuthHeaders()
+      );
+      toast.success("Restaurant updated");
+      setEditRestaurant(null);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update");
+    }
   };
 
   return (
@@ -68,7 +86,7 @@ const ListRestaurants = ({ url }) => {
 
         <tbody>
           {restaurants.map((r) => (
-            <tr key={r._id}>
+            <tr key={r.id}>
               <td><img src={r.image} alt={r.name} className="table-img" /></td>
               <td>{r.name}</td>
               <td>{r.city}</td>
@@ -76,14 +94,14 @@ const ListRestaurants = ({ url }) => {
               <td>{r.rating}</td>
               <td className="actions">
                 <button className="edit" onClick={() => handleEditClick(r)}>Edit</button>
-                <button className="delete" onClick={() => handleDelete(r._id)}>Delete</button>
+                <button className="delete" onClick={() => handleDelete(r.id)}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* ✅ Edit Popup */}
+      {/* Edit Popup */}
       {editRestaurant && (
         <div className="edit-popup">
           <div className="edit-popup-content">
@@ -118,8 +136,6 @@ const ListRestaurants = ({ url }) => {
                 onChange={(e) => setUpdatedData({ ...updatedData, rating: e.target.value })}
                 required
               />
-
-              {/* ✅ NEW FIELD: Image URL */}
               <input
                 type="text"
                 placeholder="Image URL"
@@ -142,4 +158,3 @@ const ListRestaurants = ({ url }) => {
 };
 
 export default ListRestaurants;
-

@@ -1,16 +1,15 @@
 import { toast } from "react-toastify";
 import React, { useState } from "react";
 import "./Add.css";
-//import { assets } from "@/assets/assets.js";
 import axios from "axios";
 
-const Add = ({ url }) => {
+const Add = ({ url, getToken }) => {
   const [data, setData] = useState({
     name: "",
     description: "",
     price: "",
-    category: "Salads",
-    image: "", // ✅ Now image is a URL string
+    category: "Salad",
+    image: "",
   });
 
   const onChangeHandler = (event) => {
@@ -18,51 +17,56 @@ const Add = ({ url }) => {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
- const onSubmitHandler = async (event) => {
-  event.preventDefault();
+  const onSubmitHandler = async (event) => {
+    event.preventDefault();
 
-  try {
-    const response = await axios.post(`${url}/api/food/add`, {
-      name: data.name,
-      description: data.description,
-      price: Number(data.price),
-      category: data.category,
-      image: data.image, // ✅ sending url only
-    });
+    try {
+      const response = await axios.post(
+        `${url}/api/food/add`,
+        {
+          name: data.name,
+          description: data.description,
+          price: Number(data.price),
+          category: data.category,
+          image: data.image,
+        },
+        {
+          headers: { Authorization: `Bearer ${await getToken()}` },
+        }
+      );
 
-    if (response.data.success) {
-      toast.success("Food Added Successfully");
-      setData({
-        name: "",
-        description: "",
-        price: "",
-        category: "Salads",
-        image: "",
-      });
-    } else {
-      toast.error(response.data.message);
+      if (response.data.success) {
+        toast.success("Food Added Successfully");
+        setData({
+          name: "",
+          description: "",
+          price: "",
+          category: "Salad",
+          image: "",
+        });
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error adding food:", error);
+      toast.error(error.response?.data?.message || "Something went wrong.");
     }
-  } catch (error) {
-    console.error("Error adding food:", error);
-    toast.error("Something went wrong.");
-  }
-};
-
+  };
 
   return (
     <div className="add">
       <form className="flex-col" onSubmit={onSubmitHandler}>
         <div className="add-product-image flex-col">
-  <p>Image URL</p>
-  <input
-    type="text"
-    name="image"
-    placeholder="https://example.com/image.jpg"
-    value={data.image}
-    onChange={onChangeHandler}
-    required
-  />
-</div>
+          <p>Image URL</p>
+          <input
+            type="text"
+            name="image"
+            placeholder="https://example.com/image.jpg"
+            value={data.image}
+            onChange={onChangeHandler}
+            required
+          />
+        </div>
 
         <div className="add-product-name flex-col">
           <p>Product name</p>

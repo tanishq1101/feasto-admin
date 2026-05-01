@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 import "./addRestaurant.css";
 
-const AddRestaurant = ({ url }) => {
+const AddRestaurant = ({ url, getToken }) => {
   const [form, setForm] = useState({
     name: "",
     city: "",
@@ -19,11 +20,14 @@ const AddRestaurant = ({ url }) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${url}/api/admin/restaurants/add`, form);
+      const response = await axios.post(
+        `${url}/api/admin/restaurants/add`,
+        form,
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
+      );
 
       if (response.data.success) {
-        alert("✅ Restaurant Added Successfully");
-
+        toast.success("Restaurant Added Successfully");
         setForm({
           name: "",
           city: "",
@@ -33,11 +37,11 @@ const AddRestaurant = ({ url }) => {
           image: "",
         });
       } else {
-        alert("❌ Failed to add restaurant");
+        toast.error("Failed to add restaurant");
       }
     } catch (error) {
       console.error("Add Restaurant Error:", error);
-      alert("❌ Server Error");
+      toast.error(error.response?.data?.message || "Server Error");
     }
   };
 

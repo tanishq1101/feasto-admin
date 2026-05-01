@@ -1,19 +1,39 @@
 .navbar {
   display: flex;
-  justify-content: space-between; /* Logo left, profile right */
+  justify-content: space-between;
   align-items: center;
   padding: 10px 4%;
 }
 
-/* Logo on the left — slightly larger now */
 .navbar .logo {
-  width: 100px; /* slightly bigger */
+  width: 100px;
   cursor: pointer;
 }
 
-/* Profile on the right */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .navbar .profile {
   width: 45px;
   border-radius: 50%;
   cursor: pointer;
 }
+
+.logout-btn {
+  padding: 8px 16px;
+  background: #e94560;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.logout-btn:hover {
+  opacity: 0.85;
+}
+

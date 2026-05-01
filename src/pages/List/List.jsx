@@ -3,20 +3,27 @@ import "./List.css";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const List = ({ url }) => {
+const List = ({ url, getToken }) => {
   const [list, setList] = useState([]);
   const [editItem, setEditItem] = useState(null);
   const [updatedData, setUpdatedData] = useState({
     name: "",
     category: "",
     price: "",
-    image: null,
+    image: "",
   });
 
+  const getAuthHeaders = async () => ({ headers: { Authorization: `Bearer ${await getToken()}` } });
+
   const fetchList = async () => {
-    const response = await axios.get(`${url}/api/food/list`);
-    if (response.data.success) setList(response.data.data);
-    else toast.error("Error fetching list");
+    try {
+      const response = await axios.get(`${url}/api/food/list`);
+      if (response.data.success) setList(response.data.data);
+      else toast.error("Error fetching list");
+    } catch (err) {
+      console.error(err);
+      toast.error("Error fetching list");
+    }
   };
 
   const removeFood = async (foodId) => {
@@ -25,33 +32,45 @@ const List = ({ url }) => {
     );
     if (!confirmDelete) return;
 
-    const response = await axios.post(`${url}/api/food/remove`, { id: foodId });
-    await fetchList();
-    if (response.data.success) toast.success(response.data.message);
-    else toast.error("Error removing item");
+    try {
+      const response = await axios.post(
+        `${url}/api/food/remove`,
+        { id: foodId },
+        await getAuthHeaders()
+      );
+      await fetchList();
+      if (response.data.success) toast.success(response.data.message);
+      else toast.error("Error removing item");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Error removing item");
+    }
   };
 
   const handleEdit = (item) => {
-    setEditItem(item._id);
+    setEditItem(item.id);
     setUpdatedData({
       name: item.name,
       category: item.category,
       price: item.price,
-      image: null,
+      image: item.image || "",
     });
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const formData = new FormData();
-      formData.append("id", editItem);
-      formData.append("name", updatedData.name);
-      formData.append("category", updatedData.category);
-      formData.append("price", updatedData.price);
-      if (updatedData.image) formData.append("image", updatedData.image);
-
-      const response = await axios.post(`${url}/api/food/update`, formData);
+      const response = await axios.post(
+        `${url}/api/food/update`,
+        {
+          id: editItem,
+          name: updatedData.name,
+          category: updatedData.category,
+          price: updatedData.price,
+          image: updatedData.image || undefined,
+        },
+        await getAuthHeaders()
+      );
 
       if (response.data.success) {
         toast.success("Item updated successfully!");
@@ -62,7 +81,7 @@ const List = ({ url }) => {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Error updating item");
+      toast.error(err.response?.data?.message || "Error updating item");
     }
   };
 
@@ -83,16 +102,15 @@ const List = ({ url }) => {
           <b>Actions</b>
         </div>
         {list.map((item) => (
-          <div key={item._id} className="list-table-format">
+          <div key={item.id} className="list-table-format">
             <img
-          src={
-                item.image.startsWith("http")
-           ? item.image
-          : `${url}/images/${item.image}`
-           }
-  alt={item.name}
-/>
-
+              src={
+                item.image && item.image.startsWith("http")
+                  ? item.image
+                  : `${url}/images/${item.image}`
+              }
+              alt={item.name}
+            />
             <p>{item.name}</p>
             <p>{item.category}</p>
             <p>${item.price}</p>
@@ -102,7 +120,7 @@ const List = ({ url }) => {
               </button>
               <button
                 className="list-remove-btn"
-                onClick={() => removeFood(item._id)}
+                onClick={() => removeFood(item.id)}
                 title="Remove item"
               >
                 ❌
@@ -112,7 +130,7 @@ const List = ({ url }) => {
         ))}
       </div>
 
-      {/* ✅ Edit Popup */}
+      {/* Edit Popup */}
       {editItem && (
         <div className="edit-popup">
           <div className="edit-popup-content">
@@ -146,9 +164,11 @@ const List = ({ url }) => {
                 required
               />
               <input
-                type="file"
+                type="text"
+                placeholder="Image URL"
+                value={updatedData.image}
                 onChange={(e) =>
-                  setUpdatedData({ ...updatedData, image: e.target.files[0] })
+                  setUpdatedData({ ...updatedData, image: e.target.value })
                 }
               />
               <div className="edit-buttons">

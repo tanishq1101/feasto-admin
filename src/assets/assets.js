@@ -14,4 +14,6 @@ export const assets ={
     parcel_icon
 }
 
-export const url = 'http://localhost:4000'
+export const url = import.meta.env.DEV
+  ? "http://localhost:4000"
+  : "https://backend-three-pink-73.vercel.app";

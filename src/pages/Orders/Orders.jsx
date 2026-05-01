@@ -4,15 +4,17 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { assets } from "../../assets/assets";
 
-const Orders = ({ url }) => {
+const Orders = ({ url, getToken }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch all orders
+  const getAuthHeaders = async () => ({ headers: { Authorization: `Bearer ${await getToken()}` } });
+
+  // Fetch all orders (admin-protected)
   const fetchAllOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${url}/api/order/list`);
+      const response = await axios.get(`${url}/api/order/list`, await getAuthHeaders());
       if (response.data.success) {
         setOrders(response.data.data || []);
       } else {
@@ -20,23 +22,25 @@ const Orders = ({ url }) => {
       }
     } catch (err) {
       console.error("Error fetching orders:", err);
-      toast.error("Failed to fetch orders");
+      toast.error(err.response?.data?.message || "Failed to fetch orders");
     } finally {
       setLoading(false);
     }
-  }, [url]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, getToken]);
 
   useEffect(() => {
     fetchAllOrders();
   }, [fetchAllOrders]);
 
-  // ✅ Update order status
+  // Update order status (admin-protected)
   const handleStatusChange = async (orderId, status) => {
     try {
-      const response = await axios.post(`${url}/api/order/status`, {
-        orderId,
-        status,
-      });
+      const response = await axios.post(
+        `${url}/api/order/status`,
+        { orderId, status },
+        await getAuthHeaders()
+      );
 
       if (response.data.success) {
         toast.success("Order status updated");
@@ -46,29 +50,29 @@ const Orders = ({ url }) => {
       }
     } catch (err) {
       console.error("Error updating status:", err);
-      toast.error("Failed to update status");
+      toast.error(err.response?.data?.message || "Failed to update status");
     }
   };
 
-  // ✅ Delete an order (no auth header, no token)
+  // Delete an order (admin-protected)
   const handleDeleteOrder = async (orderId) => {
     if (!window.confirm("Are you sure you want to delete this order?")) return;
 
     try {
-      // 👇 this ensures no default token or Authorization header interferes
-      const response = await axios.delete(`${url}/api/order/admin/${orderId}`, {
-        headers: {}, // clear headers so it doesn’t send token
-      });
+      const response = await axios.delete(
+        `${url}/api/order/admin/${orderId}`,
+        await getAuthHeaders()
+      );
 
       if (response.data.success) {
         toast.success("Order deleted successfully");
-        setOrders((prev) => prev.filter((order) => order._id !== orderId));
+        setOrders((prev) => prev.filter((order) => order.id !== orderId));
       } else {
         toast.error(response.data.message || "Failed to delete order");
       }
     } catch (err) {
       console.error("Error deleting order:", err);
-      toast.error("Failed to delete order");
+      toast.error(err.response?.data?.message || "Failed to delete order");
     }
   };
 
@@ -80,7 +84,7 @@ const Orders = ({ url }) => {
       <h3>Orders</h3>
       <div className="order-list">
         {orders.map((order) => (
-          <div key={order._id} className="order-item">
+          <div key={order.id} className="order-item">
             <img src={assets.parcel_icon} alt="parcel" />
 
             <div className="order-item-details">
@@ -116,7 +120,7 @@ const Orders = ({ url }) => {
 
               <select
                 value={order.status || "Food Processing"}
-                onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                onChange={(e) => handleStatusChange(order.id, e.target.value)}
               >
                 <option value="Food Processing">Food Processing</option>
                 <option value="Out for Delivery">Out for Delivery</option>
@@ -126,7 +130,7 @@ const Orders = ({ url }) => {
               {/* 🗑️ Delete Button */}
               <button
                 className="remove-btn"
-                onClick={() => handleDeleteOrder(order._id)}
+                onClick={() => handleDeleteOrder(order.id)}
               >
                 🗑️
               </button>
