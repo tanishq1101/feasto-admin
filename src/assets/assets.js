@@ -16,4 +16,4 @@ export const assets ={
 
 export const url = import.meta.env.DEV
   ? "http://localhost:4000"
-  : "https://backend-three-pink-73.vercel.app";
+  : "https://feasto-backend-s58d.onrender.com";
