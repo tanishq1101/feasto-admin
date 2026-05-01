@@ -1,8 +1,19 @@
-import React from "react";
-import { SignIn } from "@clerk/clerk-react";
+import React, { useState } from "react";
 import "./AdminLogin.css";
 
-const AdminLogin = () => {
+const AdminLogin = ({ onLogin, loading }) => {
+  const [form, setForm] = useState({ email: "", password: "" });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await onLogin(form);
+  };
+
   return (
     <div className="admin-login">
       <div className="admin-login-header">
@@ -10,34 +21,42 @@ const AdminLogin = () => {
           <span className="logo-icon">🍽️</span>
           <span className="logo-text">Feasto Admin</span>
         </div>
-        <p className="admin-subtitle">Sign in with your admin account to continue</p>
+        <p className="admin-subtitle">Sign in with admin credentials to continue</p>
       </div>
 
-      <div className="admin-clerk-wrapper">
-        <SignIn
-          routing="hash"
-          appearance={{
-            elements: {
-              rootBox: "admin-clerk-root",
-              card: "admin-clerk-card",
-            },
-            variables: {
-              colorPrimary: "#e94560",
-              colorBackground: "rgba(255,255,255,0.03)",
-              colorText: "#ffffff",
-              colorTextSecondary: "rgba(255,255,255,0.6)",
-              colorInputBackground: "rgba(255,255,255,0.08)",
-              colorInputText: "#ffffff",
-              borderRadius: "12px",
-              fontFamily: "'Inter', sans-serif",
-            },
-          }}
-          afterSignInUrl="/"
-          afterSignUpUrl="/"
-        />
+      <div className="admin-login-panel">
+        <h3>Admin Access</h3>
+        <form onSubmit={handleSubmit} className="admin-login-form">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            placeholder="admin@feasto.com"
+          />
+
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            placeholder="Enter password"
+          />
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
       </div>
     </div>
   );
 };
 
 export default AdminLogin;
+

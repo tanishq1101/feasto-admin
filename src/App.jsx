@@ -10,79 +10,52 @@ import "react-toastify/dist/ReactToastify.css";
 import AddRestaurant from "./pages/addRestaurant/addRestaurant.jsx";
 import ListRestaurants from "./pages/listRestaurant/listRestaurant.jsx";
 import AdminLogin from "./pages/AdminLogin/AdminLogin.jsx";
-import { useUser, useAuth, useClerk } from "@clerk/clerk-react";
 import axios from "axios";
 
 const url = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+const ADMIN_TOKEN_KEY = "feasto_admin_token";
 
 const App = () => {
-  const { isSignedIn, isLoaded } = useUser();
-  const { getToken, isLoaded: isAuthLoaded } = useAuth();
-  const { signOut } = useClerk();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingAdmin, setCheckingAdmin] = useState(false);
+  const [adminToken, setAdminToken] = useState(() => localStorage.getItem(ADMIN_TOKEN_KEY) || "");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Check admin status whenever user signs in
   useEffect(() => {
-    if (!isLoaded || !isAuthLoaded) return;
-    if (!isSignedIn) {
-      setIsAdmin(false);
-      return;
+    if (adminToken) {
+      localStorage.setItem(ADMIN_TOKEN_KEY, adminToken);
+    } else {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
     }
+  }, [adminToken]);
 
-    const verifyAdmin = async () => {
-      setCheckingAdmin(true);
-      try {
-        const token = await getToken();
-        if (!token) {
-          setIsAdmin(false);
-          toast.error("Authentication is still loading. Please try again.");
-          return;
-        }
+  const getToken = async () => adminToken;
 
-        const res = await axios.get(`${url}/api/user/check-admin`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.data.success) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-          toast.error("Access denied: You are not an admin.");
-          signOut();
-        }
-      } catch (err) {
-        console.error("Admin check failed:", err);
-        setIsAdmin(false);
-        toast.error(err.response?.data?.message || "Could not verify admin access.");
-      } finally {
-        setCheckingAdmin(false);
+  const handleLogin = async ({ email, password }) => {
+    setIsLoggingIn(true);
+    try {
+      const res = await axios.post(`${url}/api/user/admin/login`, { email, password });
+      if (res.data?.success && res.data?.token) {
+        setAdminToken(res.data.token);
+        toast.success("Admin login successful");
+      } else {
+        toast.error(res.data?.message || "Login failed");
       }
-    };
-
-    verifyAdmin();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSignedIn, isLoaded, isAuthLoaded, getToken, signOut]);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   const handleLogout = () => {
-    signOut();
+    setAdminToken("");
     toast.info("Logged out");
   };
 
-  // Still loading Clerk
-  if (!isLoaded || checkingAdmin) {
-    return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", background: "#1a1a2e" }}>
-        <div style={{ color: "#ff6b35", fontSize: "18px" }}>⏳ Verifying access...</div>
-      </div>
-    );
-  }
-
-  // Not signed in or not admin
-  if (!isSignedIn || !isAdmin) {
+  if (!adminToken) {
     return (
       <div>
         <ToastContainer />
-        <AdminLogin />
+        <AdminLogin onLogin={handleLogin} loading={isLoggingIn} />
       </div>
     );
   }
