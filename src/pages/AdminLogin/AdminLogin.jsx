@@ -15,6 +15,7 @@ const AdminLogin = () => {
 
       <div className="admin-clerk-wrapper">
         <SignIn
+          routing="hash"
           appearance={{
             elements: {
               rootBox: "admin-clerk-root",
@@ -32,6 +33,7 @@ const AdminLogin = () => {
             },
           }}
           afterSignInUrl="/"
+          afterSignUpUrl="/"
         />
       </div>
     </div>
