@@ -17,14 +17,14 @@ const url = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
 const App = () => {
   const { isSignedIn, isLoaded } = useUser();
-  const { getToken } = useAuth();
+  const { getToken, isLoaded: isAuthLoaded } = useAuth();
   const { signOut } = useClerk();
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(false);
 
   // Check admin status whenever user signs in
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || !isAuthLoaded) return;
     if (!isSignedIn) {
       setIsAdmin(false);
       return;
@@ -34,6 +34,12 @@ const App = () => {
       setCheckingAdmin(true);
       try {
         const token = await getToken();
+        if (!token) {
+          setIsAdmin(false);
+          toast.error("Authentication is still loading. Please try again.");
+          return;
+        }
+
         const res = await axios.get(`${url}/api/user/check-admin`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -47,8 +53,7 @@ const App = () => {
       } catch (err) {
         console.error("Admin check failed:", err);
         setIsAdmin(false);
-        toast.error("Could not verify admin access.");
-        signOut();
+        toast.error(err.response?.data?.message || "Could not verify admin access.");
       } finally {
         setCheckingAdmin(false);
       }
@@ -56,7 +61,7 @@ const App = () => {
 
     verifyAdmin();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSignedIn, isLoaded]);
+  }, [isSignedIn, isLoaded, isAuthLoaded, getToken, signOut]);
 
   const handleLogout = () => {
     signOut();
