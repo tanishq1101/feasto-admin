@@ -107,6 +107,7 @@ input, textarea, select {
 .app-layout {
   display: flex;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .app-content {
@@ -115,6 +116,8 @@ input, textarea, select {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: calc(100% - var(--sidebar-width));
 }
 
 .page-main {

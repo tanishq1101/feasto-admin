@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./Add.css";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { PlusCircle, Image, Tag, DollarSign, AlignLeft, Layers } from "lucide-react";
+import { PlusCircle, Image, Tag, IndianRupee, AlignLeft, Layers } from "lucide-react";
 
 const CATEGORIES = [
   "Salad", "Rolls", "Deserts", "Sandwich", "Cake",
@@ -161,14 +161,14 @@ const Add = ({ url, getToken }) => {
 
             <div className="form-group">
               <label className="form-label">
-                <DollarSign size={13} style={{ display: "inline", marginRight: 5 }} />
-                Price (USD)
+                <IndianRupee size={13} style={{ display: "inline", marginRight: 5 }} />
+                Price (INR)
               </label>
               <input
                 className="form-input"
                 type="number"
                 name="price"
-                placeholder="e.g. 12.99"
+                placeholder="e.g. 150"
                 value={data.price}
                 onChange={onChange}
                 min="0.01"

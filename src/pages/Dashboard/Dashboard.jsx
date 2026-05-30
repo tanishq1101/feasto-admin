@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./Dashboard.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -8,74 +8,155 @@ import {
   ClipboardList,
   TrendingUp,
   PlusCircle,
-  PlusSquare,
   ArrowRight,
   Package,
   Star,
+  Users,
+  Layers,
+  MapPin,
+  RefreshCw,
 } from "lucide-react";
 
 const Dashboard = ({ url, getToken }) => {
-  const [stats, setStats] = useState({ foods: 0, restaurants: 0, orders: 0, revenue: 0 });
+  const [stats, setStats] = useState({ foods: 0, restaurants: 0, orders: 0, revenue: 0, users: 0 });
   const [recentFoods, setRecentFoods] = useState([]);
   const [recentRestaurants, setRecentRestaurants] = useState([]);
+  const [categoryDistribution, setCategoryDistribution] = useState([]);
+  const [cityDistribution, setCityDistribution] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+
+  const load = useCallback(async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
+    try {
+      const token = await getToken();
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [foodsRes, restaurantsRes, ordersRes, usersRes] = await Promise.allSettled([
+        axios.get(`${url}/api/food/list`),
+        axios.get(`${url}/api/admin/restaurants/list`, { headers }),
+        axios.get(`${url}/api/order/list`, { headers }),
+        axios.get(`${url}/api/user/list`, { headers }),
+      ]);
+
+      const foods = foodsRes.status === "fulfilled" && foodsRes.value.data.success
+        ? foodsRes.value.data.data : [];
+      const restaurants = restaurantsRes.status === "fulfilled" && restaurantsRes.value.data.success
+        ? restaurantsRes.value.data.data : [];
+      const orders = ordersRes.status === "fulfilled" && ordersRes.value.data.success
+        ? ordersRes.value.data.data : [];
+      const usersList = usersRes.status === "fulfilled" && usersRes.value.data.success
+        ? usersRes.value.data.data : [];
+
+      const revenue = orders.reduce((sum, o) => sum + (o.amount || 0), 0);
+
+      // Process food category distributions
+      const categoryCounts = {};
+      foods.forEach((f) => {
+        categoryCounts[f.category] = (categoryCounts[f.category] || 0) + 1;
+      });
+      const totalFoods = foods.length || 1;
+      const processedCategories = Object.entries(categoryCounts)
+        .map(([name, count]) => ({
+          name,
+          count,
+          percentage: Math.round((count / totalFoods) * 100),
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // Process restaurant city distributions
+      const cityCounts = {};
+      restaurants.forEach((r) => {
+        cityCounts[r.city] = (cityCounts[r.city] || 0) + 1;
+      });
+      const totalRestaurants = restaurants.length || 1;
+      const processedCities = Object.entries(cityCounts)
+        .map(([name, count]) => ({
+          name,
+          count,
+          percentage: Math.round((count / totalRestaurants) * 100),
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      setStats({
+        foods: foods.length,
+        restaurants: restaurants.length,
+        orders: orders.length,
+        revenue,
+        users: usersList.length,
+      });
+
+      setRecentFoods(foods.slice(0, 5));
+      setRecentRestaurants(restaurants.slice(0, 5));
+      setCategoryDistribution(processedCategories);
+      setCityDistribution(processedCities);
+    } catch (err) {
+      console.error("Dashboard load error:", err);
+    } finally {
+      if (!isSilent) setLoading(false);
+    }
+  }, [url, getToken]);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const token = await getToken();
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const [foodsRes, restaurantsRes, ordersRes] = await Promise.allSettled([
-          axios.get(`${url}/api/food/list`),
-          axios.get(`${url}/api/admin/restaurants/list`, { headers }),
-          axios.get(`${url}/api/order/list`, { headers }),
-        ]);
-
-        const foods = foodsRes.status === "fulfilled" && foodsRes.value.data.success
-          ? foodsRes.value.data.data : [];
-        const restaurants = restaurantsRes.status === "fulfilled" && restaurantsRes.value.data.success
-          ? restaurantsRes.value.data.data : [];
-        const orders = ordersRes.status === "fulfilled" && ordersRes.value.data.success
-          ? ordersRes.value.data.data : [];
-
-        const revenue = orders.reduce((sum, o) => sum + (o.amount || 0), 0);
-
-        setStats({
-          foods: foods.length,
-          restaurants: restaurants.length,
-          orders: orders.length,
-          revenue,
-        });
-        setRecentFoods(foods.slice(0, 5));
-        setRecentRestaurants(restaurants.slice(0, 5));
-      } catch (err) {
-        console.error("Dashboard load error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
-  }, [url, getToken]);
+  }, [load]);
+
+  // Auto-refresh logic
+  useEffect(() => {
+    let intervalId;
+    if (autoRefresh) {
+      intervalId = setInterval(() => {
+        load(true); // silent refresh (doesn't trigger full screen loading spinner)
+      }, 30000); // every 30 seconds
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [autoRefresh, load]);
 
   const statCards = [
     { label: "Food Items", value: stats.foods, icon: UtensilsCrossed, color: "accent" },
     { label: "Restaurants", value: stats.restaurants, icon: Store, color: "success" },
     { label: "Total Orders", value: stats.orders, icon: ClipboardList, color: "info" },
-    { label: "Revenue", value: `$${stats.revenue.toFixed(0)}`, icon: TrendingUp, color: "warning" },
+    { label: "Total Revenue", value: `₹${stats.revenue.toFixed(2)}`, icon: TrendingUp, color: "warning" },
+    { label: "Registered Users", value: stats.users, icon: Users, color: "purple" },
   ];
 
   if (loading) {
     return (
       <div className="loading-state">
         <div className="spinner" />
-        <p>Loading dashboard...</p>
+        <p>Loading dashboard metrics...</p>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="dashboard-page">
+      {/* Top Header Row with Auto Refresh Toggle */}
+      <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 28 }}>
+        <div>
+          <h1 style={{ margin: 0 }}>Dashboard</h1>
+          <p style={{ margin: "4px 0 0" }}>Real-time analytics and statistics overview</p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <label className="auto-refresh-toggle" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--text-secondary)", cursor: "pointer", fontWeight: 500 }}>
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+              style={{ width: 16, height: 16, accentColor: "var(--accent-primary)", cursor: "pointer" }}
+            />
+            <span>Auto Refresh (30s)</span>
+          </label>
+          <button className="btn btn-secondary btn-sm" onClick={() => load(false)} title="Force Refresh">
+            <RefreshCw size={14} />
+          </button>
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="dashboard-grid">
         {statCards.map((card) => (
@@ -108,10 +189,79 @@ const Dashboard = ({ url, getToken }) => {
           <div className="quick-action-icon"><ClipboardList size={18} /></div>
           View Orders
         </Link>
-        <Link to="/list" className="quick-action-btn">
-          <div className="quick-action-icon"><UtensilsCrossed size={18} /></div>
-          Manage Foods
+        <Link to="/users" className="quick-action-btn">
+          <div className="quick-action-icon"><Users size={18} /></div>
+          Manage Users
         </Link>
+      </div>
+
+      {/* Metrics & Distributions */}
+      <div className="two-col" style={{ marginBottom: 28 }}>
+        {/* Category distribution */}
+        <div className="card">
+          <div className="section-header">
+            <span className="section-title">
+              <Layers size={16} style={{ verticalAlign: "middle", marginRight: 8, color: "var(--accent-primary)" }} />
+              Menu Breakdown by Category
+            </span>
+          </div>
+          {categoryDistribution.length === 0 ? (
+            <div className="empty-state" style={{ padding: "32px 0" }}>
+              <Layers size={36} />
+              <p>No categories analysis available</p>
+            </div>
+          ) : (
+            <div className="distribution-list">
+              {categoryDistribution.map((item) => (
+                <div key={item.name} className="distribution-item">
+                  <div className="dist-meta">
+                    <span className="dist-name">{item.name}</span>
+                    <span className="dist-val">{item.count} items ({item.percentage}%)</span>
+                  </div>
+                  <div className="dist-progress-track">
+                    <div
+                      className="dist-progress-bar accent-bar"
+                      style={{ width: `${item.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* City distribution */}
+        <div className="card">
+          <div className="section-header">
+            <span className="section-title">
+              <MapPin size={16} style={{ verticalAlign: "middle", marginRight: 8, color: "var(--info)" }} />
+              Restaurant Coverage by City
+            </span>
+          </div>
+          {cityDistribution.length === 0 ? (
+            <div className="empty-state" style={{ padding: "32px 0" }}>
+              <MapPin size={36} />
+              <p>No coverage analysis available</p>
+            </div>
+          ) : (
+            <div className="distribution-list">
+              {cityDistribution.map((item) => (
+                <div key={item.name} className="distribution-item">
+                  <div className="dist-meta">
+                    <span className="dist-name">{item.name}</span>
+                    <span className="dist-val">{item.count} stores ({item.percentage}%)</span>
+                  </div>
+                  <div className="dist-progress-track">
+                    <div
+                      className="dist-progress-bar info-bar"
+                      style={{ width: `${item.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Recent Data */}
@@ -148,7 +298,7 @@ const Dashboard = ({ url, getToken }) => {
                   <div className="recent-item-name">{item.name}</div>
                   <div className="recent-item-meta">{item.category}</div>
                 </div>
-                <div className="recent-item-price">${item.price}</div>
+                <div className="recent-item-price">₹{item.price.toFixed(2)}</div>
               </div>
             ))
           )}
@@ -184,7 +334,7 @@ const Dashboard = ({ url, getToken }) => {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--warning)", fontSize: 13, fontWeight: 700 }}>
                   <Star size={13} fill="currentColor" />
-                  {r.rating}
+                  {r.rating.toFixed(1)}
                 </div>
               </div>
             ))

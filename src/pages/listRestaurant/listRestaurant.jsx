@@ -12,6 +12,8 @@ import {
   Save,
   RefreshCw,
   MapPin,
+  SlidersHorizontal,
+  Building2,
 } from "lucide-react";
 
 const ListRestaurants = ({ url, getToken }) => {
@@ -19,6 +21,9 @@ const ListRestaurants = ({ url, getToken }) => {
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [activeCity, setActiveCity] = useState("All");
+  const [sortBy, setSortBy] = useState("default");
+
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({ name: "", city: "", cuisine: "", rating: "", image: "", address: "" });
   const [saving, setSaving] = useState(false);
@@ -42,16 +47,41 @@ const ListRestaurants = ({ url, getToken }) => {
 
   useEffect(() => { load(); }, []); // eslint-disable-line
 
+  // Unique list of cities for dropdown filter
+  const uniqueCities = ["All", ...new Set(restaurants.map((r) => r.city))];
+
+  // Filtering & Sorting logic
   useEffect(() => {
-    const q = search.toLowerCase();
-    setFiltered(
-      q ? restaurants.filter((r) =>
+    let result = [...restaurants];
+
+    // Filter by search
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((r) =>
         r.name.toLowerCase().includes(q) ||
         r.city.toLowerCase().includes(q) ||
         r.cuisine.toLowerCase().includes(q)
-      ) : restaurants
-    );
-  }, [search, restaurants]);
+      );
+    }
+
+    // Filter by active city
+    if (activeCity !== "All") {
+      result = result.filter((r) => r.city === activeCity);
+    }
+
+    // Sort by selection
+    if (sortBy === "rating-high") {
+      result.sort((a, b) => b.rating - a.rating);
+    } else if (sortBy === "rating-low") {
+      result.sort((a, b) => a.rating - b.rating);
+    } else if (sortBy === "name-asc") {
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === "name-desc") {
+      result.sort((a, b) => b.name.localeCompare(a.name));
+    }
+
+    setFiltered(result);
+  }, [search, activeCity, sortBy, restaurants]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this restaurant?")) return;
@@ -105,11 +135,45 @@ const ListRestaurants = ({ url, getToken }) => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{filtered.length} restaurants</span>
-          <button className="btn btn-secondary btn-sm" onClick={load}>
-            <RefreshCw size={14} />
-          </button>
+
+        <div className="restaurant-toolbar-right">
+          {/* City Filter */}
+          <div className="restaurant-select-wrapper">
+            <MapPin size={14} className="select-icon-overlay" />
+            <select
+              className="restaurant-toolbar-select"
+              value={activeCity}
+              onChange={(e) => setActiveCity(e.target.value)}
+            >
+              <option value="All">All Cities</option>
+              {uniqueCities.filter((c) => c !== "All").map((city) => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort selection */}
+          <div className="restaurant-select-wrapper">
+            <SlidersHorizontal size={14} className="select-icon-overlay" />
+            <select
+              className="restaurant-toolbar-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="default">Default Order</option>
+              <option value="rating-high">Rating: High to Low</option>
+              <option value="rating-low">Rating: Low to High</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+            </select>
+          </div>
+
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{filtered.length} restaurants</span>
+            <button className="btn btn-secondary btn-sm" onClick={load}>
+              <RefreshCw size={14} className={loading ? "spin" : ""} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -124,7 +188,11 @@ const ListRestaurants = ({ url, getToken }) => {
           <div className="empty-state">
             <Store size={48} />
             <h3>No Restaurants Found</h3>
-            <p>{search ? "Try a different search term" : "Add your first restaurant to get started"}</p>
+            <p>
+              {search || activeCity !== "All"
+                ? "Try adjusting search or city filters."
+                : "Add your first restaurant to get started."}
+            </p>
           </div>
         ) : (
           <table className="restaurant-table">
@@ -167,7 +235,7 @@ const ListRestaurants = ({ url, getToken }) => {
                   <td>
                     <div className="rest-rating">
                       <Star size={13} fill="currentColor" />
-                      {r.rating}
+                      {r.rating.toFixed(1)}
                     </div>
                   </td>
                   <td>
@@ -203,7 +271,7 @@ const ListRestaurants = ({ url, getToken }) => {
             <form className="rest-edit-form" onSubmit={handleUpdate}>
               {editData.image && (
                 <img src={editData.image} alt="preview"
-                  style={{ width: "100%", height: 120, objectFit: "cover", borderRadius: "var(--radius-md)", background: "var(--bg-secondary)" }}
+                  style={{ width: "100%", height: 120, objectFit: "cover", borderRadius: "var(--radius-md)", background: "var(--bg-secondary)", marginBottom: 12 }}
                   onError={(e) => { e.target.style.display = "none"; }} />
               )}
 

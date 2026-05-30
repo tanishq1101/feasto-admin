@@ -1,0 +1,228 @@
+.users-page {
+  width: 100%;
+  animation: fadeIn 0.4s ease;
+}
+
+.users-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.users-search {
+  position: relative;
+  flex: 1;
+  max-width: 360px;
+}
+
+.users-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.users-search input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+}
+
+.users-search input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+.users-search input::placeholder {
+  color: var(--text-muted);
+}
+
+.users-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.users-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.users-count strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* Table wrap styles */
+.users-table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table th {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.users-table td {
+  padding: 14px 18px;
+  font-size: 14px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.users-table tbody tr {
+  transition: var(--transition);
+}
+
+.users-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.users-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Row specifically highlighting current admin */
+.users-table tbody tr.self-row {
+  background: rgba(255, 107, 53, 0.02);
+}
+
+.users-table tbody tr.self-row:hover {
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.user-avatar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+}
+
+.user-avatar.admin-avatar {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.25);
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.unnamed-label {
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.self-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-primary);
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.user-db-id {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+  margin-top: 2px;
+}
+
+.user-email-cell,
+.user-joined-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+}
+
+.user-email-cell svg,
+.user-joined-cell svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.self-role-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+}
+
+.user-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Animations */
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@media (max-width: 900px) {
+  .users-table-wrap {
+    overflow-x: auto;
+  }
+}

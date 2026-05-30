@@ -11,6 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import AddRestaurant from "./pages/addRestaurant/addRestaurant.jsx";
 import ListRestaurants from "./pages/listRestaurant/listRestaurant.jsx";
+import Users from "./pages/Users/Users.jsx";
 import {
   SignedIn,
   SignedOut,
@@ -115,6 +116,7 @@ const App = () => {
             <main className="page-main" style={{ marginTop: "var(--navbar-height)" }}>
               <Routes>
                 <Route path="/dashboard" element={<Dashboard url={url} getToken={getToken} />} />
+                <Route path="/users" element={<Users url={url} getToken={getToken} />} />
                 <Route path="/add" element={<Add url={url} getToken={getToken} />} />
                 <Route path="/list" element={<List url={url} getToken={getToken} />} />
                 <Route path="/orders" element={<Orders url={url} getToken={getToken} />} />

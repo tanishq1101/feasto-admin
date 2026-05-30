@@ -7,6 +7,7 @@ import { ShieldCheck, Sun, Moon } from "lucide-react";
 const routeLabels = {
   "/": "Dashboard",
   "/dashboard": "Dashboard",
+  "/users": "Users Management",
   "/add": "Add Food Item",
   "/list": "Food Items",
   "/orders": "Orders",

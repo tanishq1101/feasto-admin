@@ -8,6 +8,7 @@ import {
   Store,
   PlusSquare,
   ChefHat,
+  Users,
 } from "lucide-react";
 import { SignOutButton, useUser } from "@clerk/clerk-react";
 import "./Sidebar.css";
@@ -17,6 +18,7 @@ const navItems = [
     section: "Overview",
     links: [
       { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/users", icon: Users, label: "Users" },
     ],
   },
   {

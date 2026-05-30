@@ -10,6 +10,7 @@ import {
   X,
   Save,
   RefreshCw,
+  SlidersHorizontal,
 } from "lucide-react";
 
 const CATEGORIES = [
@@ -23,11 +24,28 @@ const List = ({ url, getToken }) => {
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("default");
+  
   const [editItem, setEditItem] = useState(null);
   const [updatedData, setUpdatedData] = useState({ name: "", category: "", price: "", image: "", description: "" });
   const [saving, setSaving] = useState(false);
 
   const getAuthHeaders = async () => ({ headers: { Authorization: `Bearer ${await getToken()}` } });
+
+  const highlightMatch = (text, query) => {
+    if (!query) return text;
+    const parts = String(text).split(new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi'));
+    return (
+      <>
+        {parts.map((part, index) => 
+          part.toLowerCase() === query.toLowerCase() 
+            ? <mark key={index} style={{ backgroundColor: 'rgba(255, 107, 53, 0.2)', color: 'var(--accent-primary)', padding: '0 2px', borderRadius: '2px' }}>{part}</mark> 
+            : part
+        )}
+      </>
+    );
+  };
 
   const fetchList = async () => {
     setLoading(true);
@@ -51,12 +69,34 @@ const List = ({ url, getToken }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Filter & Sort logic
   useEffect(() => {
-    const q = search.toLowerCase();
-    setFiltered(
-      q ? list.filter((i) => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q)) : list
-    );
-  }, [search, list]);
+    let result = [...list];
+
+    // Filter search query
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((i) => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
+    }
+
+    // Filter active category
+    if (activeCategory !== "All") {
+      result = result.filter((i) => i.category === activeCategory);
+    }
+
+    // Sort active selection
+    if (sortBy === "price-low") {
+      result.sort((a, b) => a.price - b.price);
+    } else if (sortBy === "price-high") {
+      result.sort((a, b) => b.price - a.price);
+    } else if (sortBy === "name-asc") {
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === "name-desc") {
+      result.sort((a, b) => b.name.localeCompare(a.name));
+    }
+
+    setFiltered(result);
+  }, [search, activeCategory, sortBy, list]);
 
   const removeFood = async (id) => {
     if (!window.confirm("Delete this food item?")) return;
@@ -131,12 +171,50 @@ const List = ({ url, getToken }) => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <span className="list-count">{filtered.length} items</span>
-          <button className="btn btn-secondary btn-sm" onClick={fetchList} title="Refresh">
-            <RefreshCw size={14} />
-          </button>
+
+        <div className="list-toolbar-right">
+          {/* Sorting Dropdown */}
+          <div className="list-sort-select-wrapper">
+            <SlidersHorizontal size={14} className="sort-icon-overlay" />
+            <select
+              className="list-sort-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="default">Default Order</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+            </select>
+          </div>
+
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span className="list-count">{filtered.length} items</span>
+            <button className="btn btn-secondary btn-sm" onClick={fetchList} title="Refresh">
+              <RefreshCw size={14} className={loading ? "spin" : ""} />
+            </button>
+          </div>
         </div>
+      </div>
+
+      {/* Category Filter Pills */}
+      <div className="category-filter-pills-wrap">
+        <button
+          className={`category-pill${activeCategory === "All" ? " active" : ""}`}
+          onClick={() => setActiveCategory("All")}
+        >
+          All Categories
+        </button>
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            className={`category-pill${activeCategory === cat ? " active" : ""}`}
+            onClick={() => setActiveCategory(cat)}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
       {/* Table */}
@@ -150,7 +228,11 @@ const List = ({ url, getToken }) => {
           <div className="empty-state">
             <UtensilsCrossed size={48} />
             <h3>No Food Items Found</h3>
-            <p>{search ? "Try a different search term" : "Add your first food item to get started"}</p>
+            <p>
+              {search || activeCategory !== "All"
+                ? "Try adjusting search query or active category filters."
+                : "Add your first food item to get started."}
+            </p>
           </div>
         ) : (
           <table className="food-table">
@@ -160,7 +242,7 @@ const List = ({ url, getToken }) => {
                 <th>Name</th>
                 <th>Category</th>
                 <th>Price</th>
-                <th style={{ textAlign: "center" }}>Actions</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -177,19 +259,19 @@ const List = ({ url, getToken }) => {
                     )}
                   </td>
                   <td>
-                    <div className="food-name">{item.name}</div>
+                    <div className="food-name">{highlightMatch(item.name, search)}</div>
                     {item.description && (
-                      <div className="food-description">{item.description}</div>
+                      <div className="food-description">{highlightMatch(item.description, search)}</div>
                     )}
                   </td>
                   <td>
-                    <span className="food-category-pill">{item.category}</span>
+                    <span className="food-category-pill">{highlightMatch(item.category, search)}</span>
                   </td>
                   <td>
-                    <span className="food-price">${item.price}</span>
+                    <span className="food-price">₹{item.price.toFixed(2)}</span>
                   </td>
                   <td>
-                    <div className="food-actions" style={{ justifyContent: "center" }}>
+                    <div className="food-actions">
                       <button className="action-btn action-btn-edit" onClick={() => handleEdit(item)}>
                         <Edit2 size={13} />
                         Edit
@@ -249,7 +331,7 @@ const List = ({ url, getToken }) => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Price ($)</label>
+                  <label className="form-label">Price (₹)</label>
                   <input className="form-input" type="number" min="0.01" step="0.01" placeholder="Price"
                     value={updatedData.price}
                     onChange={(e) => setUpdatedData({ ...updatedData, price: e.target.value })} required />
