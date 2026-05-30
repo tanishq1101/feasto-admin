@@ -14,6 +14,10 @@ export const assets ={
     parcel_icon
 }
 
-export const url = import.meta.env.DEV
-  ? "http://localhost:4000"
-  : "https://feasto-backend-s58d.onrender.com";
+const trimTrailingSlash = (value) => value.replace(/\/+$/, "");
+
+export const url = (() => {
+  const configuredUrl = import.meta.env.VITE_BACKEND_URL?.trim();
+  const resolvedUrl = configuredUrl || "http://localhost:4000";
+  return trimTrailingSlash(resolvedUrl);
+})();
