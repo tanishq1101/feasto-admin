@@ -5,8 +5,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Add from "./pages/Add/Add.jsx";
 import List from "./pages/List/List.jsx";
 import Orders from "./pages/Orders/Orders.jsx";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 import AddRestaurant from "./pages/addRestaurant/addRestaurant.jsx";
 import ListRestaurants from "./pages/listRestaurant/listRestaurant.jsx";
 import {
@@ -18,19 +19,47 @@ import {
   SignUpButton,
   useAuth,
 } from "@clerk/clerk-react";
-import axios from "axios";
 
 const url = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+
 const ADMIN_STATUS = {
   checking: "checking",
   authorized: "authorized",
   forbidden: "forbidden",
   error: "error",
 };
+
 const App = () => {
-  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn, signOut } = useAuth();
   const [adminStatus, setAdminStatus] = useState(ADMIN_STATUS.checking);
 
+  // Global Axios Interceptor to handle expired or invalid tokens
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response && error.response.status === 401) {
+          const errMsg = error.response.data?.message || "";
+          if (
+            errMsg.toLowerCase().includes("token") ||
+            errMsg.toLowerCase().includes("expired") ||
+            errMsg.toLowerCase().includes("unauthorized") ||
+            errMsg.toLowerCase().includes("no token")
+          ) {
+            toast.error("Session expired or invalid. Please sign in again.");
+            await signOut();
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [signOut]);
+
+  // Verify backend-side admin access
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) {
@@ -54,7 +83,11 @@ const App = () => {
         });
 
         if (isMounted) {
-          setAdminStatus(response.data?.success === false ? ADMIN_STATUS.forbidden : ADMIN_STATUS.authorized);
+          setAdminStatus(
+            response.data?.success === false
+              ? ADMIN_STATUS.forbidden
+              : ADMIN_STATUS.authorized
+          );
         }
       } catch (error) {
         if (!isMounted) return;
@@ -129,18 +162,9 @@ const App = () => {
             <div className="app-content">
               <Sidebar />
               <Routes>
-                <Route
-                  path="/add"
-                  element={<Add url={url} getToken={getToken} />}
-                />
-                <Route
-                  path="/list"
-                  element={<List url={url} getToken={getToken} />}
-                />
-                <Route
-                  path="/orders"
-                  element={<Orders url={url} getToken={getToken} />}
-                />
+                <Route path="/add" element={<Add url={url} getToken={getToken} />} />
+                <Route path="/list" element={<List url={url} getToken={getToken} />} />
+                <Route path="/orders" element={<Orders url={url} getToken={getToken} />} />
                 <Route
                   path="/add-restaurant"
                   element={<AddRestaurant url={url} getToken={getToken} />}
