@@ -1,113 +1,178 @@
-.order-item {
-  display: grid;
-  grid-template-columns: 0.5fr 2fr 1fr 1fr 1fr;
-  align-items: start;
-  gap: 30px;
-  font-size: 14px;
-  padding: 20px;
-  color: #333333; /* dark professional black instead of gray/red */
-  border: 1px solid #d9534f; /* softened tomato-ish border */
-  border-radius: 8px;
-  background-color: #fff; /* subtle professional background */
+/* Orders Page Styles */
+.orders-page {
+  width: 100%;
 }
 
-.order-item-food,
-.order-item-name {
-  font-weight: 600;
-}
-
-.order-item-name {
-  margin-top: 30px;
-  margin-bottom: 5px;
-}
-
-.order-item-address {
-  margin-bottom: 10px;
-}
-
-.order-item p,
-.order-item span {
-  margin: 2px 0;
-}
-
-.order-item .amount,
-.order-item .items-count {
-  font-size: 16px; /* slightly bigger */
-  font-weight: 700;
-  color: #111111; /* dark black for emphasis */
-}
-
-/* --- Select Status --- */
-.order-item select {
-  background-color: #ffe8e4; /* light reddish background */
-  border: 1px solid tomato;  /* reddish border */
-  width: max(10vw, 120px);
-  padding: 10px;
-  outline: none;
-  border-radius: 6px;
-  font-weight: 500;
-  color: #333333;
-  cursor: pointer;
-}
-
-/* Delivered option stays tomato/red */
-.order-item select option[value="Delivered"] {
-  background-color: tomato;
-  color: #fff;
-  font-weight: 600;
-}
-
-/* Other options professional */
-.order-item select option[value="Food Processing"],
-.order-item select option[value="Out for Delivery"] {
-  background-color: #f7f7f7;
-  color: #333333;
-}
-
-/* --- Responsive --- */
-@media (max-width: 1000px) {
-  .order-item {
-    grid-template-columns: 0.5fr 2fr 1fr;
-    padding: 15px 8px;
-    font-size: 12px;
-  }
-  .order-item select {
-    padding: 5px;
-    font-size: 12px;
-  }
-  .order-item img {
-    width: 40px;
-  }
-}
-.order-item {
-  position: relative;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  padding: 15px;
+.orders-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 20px;
-  transition: 0.2s ease;
+  flex-wrap: wrap;
 }
 
-.order-item:hover {
-  transform: translateY(-2px);
+.orders-filter-tabs {
+  display: flex;
+  gap: 8px;
 }
 
-/* 🗑️ Trash button style */
-.remove-btn {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background-color: #3b2f2f; /* dark brown */
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
+.filter-tab {
+  padding: 7px 14px;
+  border-radius: 20px;
   font-size: 13px;
-  transition: background 0.2s ease;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  transition: var(--transition);
 }
 
-.remove-btn:hover {
-  background-color: #1a1a1a; /* black hover */
+.filter-tab.active {
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  border-color: var(--accent-border);
+}
+
+.filter-tab:hover:not(.active) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Order Card */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  transition: var(--transition);
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.order-card:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.order-parcel-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--accent-subtle);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.order-body {}
+
+.order-items-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.order-customer-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.order-address {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.order-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.order-meta-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.order-amount {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent-primary);
+}
+
+/* Order Right Panel */
+.order-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  min-width: 160px;
+}
+
+.order-status-select {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b92a9' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+.order-status-select:focus {
+  border-color: var(--accent-primary);
+}
+
+.order-status-select.processing { border-color: var(--warning); color: var(--warning); }
+.order-status-select.out-for-delivery { border-color: var(--info); color: var(--info); }
+.order-status-select.delivered { border-color: var(--success); color: var(--success); }
+
+.order-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.order-delete-btn:hover {
+  color: var(--danger);
+  background: var(--danger-bg);
 }

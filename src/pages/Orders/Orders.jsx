@@ -2,142 +2,207 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./Orders.css";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { assets } from "../../assets/assets";
+import {
+  Package,
+  Trash2,
+  RefreshCw,
+  MapPin,
+  Phone,
+  ShoppingBag,
+  DollarSign,
+  ClipboardList,
+} from "lucide-react";
+
+const STATUS_FILTERS = ["All", "Food Processing", "Out for Delivery", "Delivered"];
 
 const Orders = ({ url, getToken }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("All");
 
   const getAuthHeaders = async () => ({ headers: { Authorization: `Bearer ${await getToken()}` } });
 
-  // Fetch all orders (admin-protected)
   const fetchAllOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${url}/api/order/list`, await getAuthHeaders());
-      if (response.data.success) {
-        setOrders(response.data.data || []);
+      const res = await axios.get(`${url}/api/order/list`, await getAuthHeaders());
+      if (res.data.success) {
+        setOrders(res.data.data || []);
       } else {
-        toast.error(response.data.message || "Failed to fetch orders");
+        toast.error(res.data.message || "Failed to fetch orders");
       }
     } catch (err) {
-      console.error("Error fetching orders:", err);
       toast.error(err.response?.data?.message || "Failed to fetch orders");
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, getToken]);
 
   useEffect(() => {
     fetchAllOrders();
   }, [fetchAllOrders]);
 
-  // Update order status (admin-protected)
   const handleStatusChange = async (orderId, status) => {
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         `${url}/api/order/status`,
         { orderId, status },
         await getAuthHeaders()
       );
-
-      if (response.data.success) {
+      if (res.data.success) {
         toast.success("Order status updated");
-        fetchAllOrders();
+        setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status } : o));
       } else {
-        toast.error(response.data.message || "Failed to update status");
+        toast.error(res.data.message || "Failed to update status");
       }
     } catch (err) {
-      console.error("Error updating status:", err);
       toast.error(err.response?.data?.message || "Failed to update status");
     }
   };
 
-  // Delete an order (admin-protected)
   const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm("Are you sure you want to delete this order?")) return;
-
+    if (!window.confirm("Delete this order permanently?")) return;
     try {
-      const response = await axios.delete(
-        `${url}/api/order/admin/${orderId}`,
-        await getAuthHeaders()
-      );
-
-      if (response.data.success) {
-        toast.success("Order deleted successfully");
-        setOrders((prev) => prev.filter((order) => order.id !== orderId));
+      const res = await axios.delete(`${url}/api/order/admin/${orderId}`, await getAuthHeaders());
+      if (res.data.success) {
+        toast.success("Order deleted");
+        setOrders((prev) => prev.filter((o) => o.id !== orderId));
       } else {
-        toast.error(response.data.message || "Failed to delete order");
+        toast.error(res.data.message || "Failed to delete order");
       }
     } catch (err) {
-      console.error("Error deleting order:", err);
       toast.error(err.response?.data?.message || "Failed to delete order");
     }
   };
 
-  if (loading) return <div className="order add">Loading orders...</div>;
-  if (!orders.length) return <div className="order add">No orders found.</div>;
+  const getStatusClass = (status) => {
+    if (status === "Food Processing") return "processing";
+    if (status === "Out for Delivery") return "out-for-delivery";
+    if (status === "Delivered") return "delivered";
+    return "";
+  };
+
+  const filtered = activeFilter === "All"
+    ? orders
+    : orders.filter((o) => o.status === activeFilter);
 
   return (
-    <div className="order add">
-      <h3>Orders</h3>
-      <div className="order-list">
-        {orders.map((order) => (
-          <div key={order.id} className="order-item">
-            <img src={assets.parcel_icon} alt="parcel" />
+    <div className="orders-page">
+      <div className="page-header">
+        <h1>Orders</h1>
+        <p>Manage and track all customer orders in real-time</p>
+      </div>
 
-            <div className="order-item-details">
-              <p className="order-item-food">
-                {order.items
-                  ?.map((item) => `${item.name} x${item.quantity}`)
-                  .join(", ") || "No items"}
-              </p>
+      {/* Toolbar */}
+      <div className="orders-toolbar">
+        <div className="orders-filter-tabs">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f}
+              className={`filter-tab${activeFilter === f ? " active" : ""}`}
+              onClick={() => setActiveFilter(f)}
+            >
+              {f} {f === "All" && `(${orders.length})`}
+            </button>
+          ))}
+        </div>
+        <button className="btn btn-secondary btn-sm" onClick={fetchAllOrders}>
+          <RefreshCw size={14} /> Refresh
+        </button>
+      </div>
 
-              <div className="order-item-name">
-                {order.address
-                  ? `${order.address.firstName || ""} ${
-                      order.address.lastName || ""
-                    }`
-                  : "No name"}
+      {/* Content */}
+      {loading ? (
+        <div className="loading-state">
+          <div className="spinner" />
+          <p>Loading orders...</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="empty-state">
+          <ClipboardList size={48} />
+          <h3>No Orders Found</h3>
+          <p>{activeFilter !== "All" ? `No orders with status "${activeFilter}"` : "No orders have been placed yet"}</p>
+        </div>
+      ) : (
+        <div className="orders-list">
+          {filtered.map((order) => (
+            <div key={order.id} className="order-card">
+              {/* Icon */}
+              <div className="order-parcel-icon">
+                <Package size={18} />
               </div>
 
-              {order.address && (
-                <div className="order-item-address">
-                  <p>{order.address.street || "No street"},</p>
-                  <p>
-                    {order.address.city || "No city"},{" "}
-                    {order.address.state || "No state"},{" "}
-                    {order.address.country || "No country"},{" "}
-                    {order.address.zipcode || "No zipcode"}
-                  </p>
-                  <p>Phone: {order.address.phone || "No phone"}</p>
+              {/* Details */}
+              <div className="order-body">
+                <div className="order-items-text">
+                  {order.items?.map((item) => `${item.name} ×${item.quantity}`).join(", ") || "No items"}
                 </div>
-              )}
 
-              <p>Items count: {order.items?.length || 0}</p>
-              <p>Total: ${order.amount?.toFixed(2) || 0}</p>
+                {order.address && (
+                  <>
+                    <div className="order-customer-name">
+                      {order.address.firstName || ""} {order.address.lastName || ""}
+                    </div>
+                    <div className="order-address">
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+                        <MapPin size={12} style={{ marginTop: 2, flexShrink: 0, color: "var(--text-muted)" }} />
+                        <span>
+                          {order.address.street && `${order.address.street}, `}
+                          {order.address.city && `${order.address.city}, `}
+                          {order.address.state && `${order.address.state}, `}
+                          {order.address.country}
+                          {order.address.zipcode && ` ${order.address.zipcode}`}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
 
-              <select
-                value={order.status || "Food Processing"}
-                onChange={(e) => handleStatusChange(order.id, e.target.value)}
-              >
-                <option value="Food Processing">Food Processing</option>
-                <option value="Out for Delivery">Out for Delivery</option>
-                <option value="Delivered">Delivered</option>
-              </select>
+                <div className="order-meta">
+                  {order.address?.phone && (
+                    <span className="order-meta-chip">
+                      <Phone size={11} />
+                      {order.address.phone}
+                    </span>
+                  )}
+                  <span className="order-meta-chip">
+                    <ShoppingBag size={11} />
+                    {order.items?.length || 0} items
+                  </span>
+                  <span className="order-meta-chip">
+                    <DollarSign size={11} />
+                    <strong style={{ color: "var(--accent-primary)" }}>
+                      ${order.amount?.toFixed(2) || "0.00"}
+                    </strong>
+                  </span>
+                </div>
+              </div>
 
-              {/* 🗑️ Delete Button */}
-              <button
-                className="remove-btn"
-                onClick={() => handleDeleteOrder(order.id)}
-              >
-                🗑️
-              </button>
+              {/* Right panel */}
+              <div className="order-right">
+                <select
+                  className={`order-status-select ${getStatusClass(order.status)}`}
+                  value={order.status || "Food Processing"}
+                  onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                >
+                  <option value="Food Processing">🍳 Processing</option>
+                  <option value="Out for Delivery">🚗 Out for Delivery</option>
+                  <option value="Delivered">✅ Delivered</option>
+                </select>
+
+                <button
+                  className="order-delete-btn"
+                  onClick={() => handleDeleteOrder(order.id)}
+                >
+                  <Trash2 size={13} />
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

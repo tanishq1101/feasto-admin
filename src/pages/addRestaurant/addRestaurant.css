@@ -1,52 +1,91 @@
-.add-restaurant {
-  width: 100%;
-  padding: 30px;
+/* Add Restaurant Page Styles */
+.add-restaurant-page {
+  max-width: 680px;
 }
 
-.add-restaurant h2 {
-  font-size: 24px;
-  margin-bottom: 25px;
-  font-weight: 600;
+.restaurant-form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+}
+
+.restaurant-form-card h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .restaurant-form {
-  max-width: 450px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 
-.input-group label {
-  font-weight: 500;
-  margin-bottom: 5px;
-  display: block;
+.restaurant-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
-.input-group input {
+.restaurant-img-preview {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  font-size: 15px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-top: 8px;
+  background: var(--bg-secondary);
 }
 
-.input-group input:focus {
-  border-color: #ff4b4b;
-  outline: none;
-}
-
-.submit-btn {
-  background: #ff4b4b;
+.restaurant-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white;
-  padding: 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 16px;
-  margin-top: 10px;
-  transition: 0.25s;
+  transition: var(--transition);
+  margin-top: 8px;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
 }
 
-.submit-btn:hover {
-  background: #e63737;
+.restaurant-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(255, 107, 53, 0.4);
+}
+
+.restaurant-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Rating stars visual */
+.rating-input-wrap {
+  position: relative;
+}
+
+.rating-input-wrap input {
+  padding-right: 40px;
+}
+
+.rating-stars {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--warning);
+  font-size: 14px;
+  pointer-events: none;
 }

@@ -1,39 +1,92 @@
 import React from "react";
-import "./Sidebar.css";
-import { assets } from "@/assets/assets.js";
 import { NavLink } from "react-router-dom";
+import {
+  LayoutDashboard,
+  PlusCircle,
+  UtensilsCrossed,
+  ClipboardList,
+  Store,
+  PlusSquare,
+  ChefHat,
+} from "lucide-react";
+import { SignOutButton, useUser } from "@clerk/clerk-react";
+import "./Sidebar.css";
+
+const navItems = [
+  {
+    section: "Overview",
+    links: [
+      { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    ],
+  },
+  {
+    section: "Food Management",
+    links: [
+      { to: "/add", icon: PlusCircle, label: "Add Food Item" },
+      { to: "/list", icon: UtensilsCrossed, label: "Food Items" },
+      { to: "/orders", icon: ClipboardList, label: "Orders" },
+    ],
+  },
+  {
+    section: "Restaurants",
+    links: [
+      { to: "/add-restaurant", icon: Store, label: "Add Restaurant" },
+      { to: "/manage-restaurants", icon: PlusSquare, label: "Manage Restaurants" },
+    ],
+  },
+];
 
 const Sidebar = () => {
+  const { user } = useUser();
+  const initials = user?.fullName
+    ? user.fullName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "A";
+
   return (
-    <div className="sidebar">
-      <div className="sidebar-options">
+    <div className="admin-sidebar">
+      {/* Logo */}
+      <div className="sidebar-logo">
+        <div className="sidebar-logo-icon">
+          <ChefHat size={20} color="white" />
+        </div>
+        <div className="sidebar-logo-text">
+          <span>Feasto</span>
+          <span>Admin Console</span>
+        </div>
+      </div>
 
-        <NavLink to="/add" className="sidebar-option">
-          <img src={assets.add_icon} alt="" />
-          <p>Add Items</p>
-        </NavLink>
+      {/* Navigation */}
+      <nav className="sidebar-nav">
+        {navItems.map((section) => (
+          <div key={section.section}>
+            <div className="sidebar-section-title">{section.section}</div>
+            {section.links.map(({ to, icon: Icon, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `sidebar-link${isActive ? " active" : ""}`
+                }
+              >
+                <Icon className="link-icon" size={18} />
+                <span className="link-text">{label}</span>
+              </NavLink>
+            ))}
+          </div>
+        ))}
+      </nav>
 
-        <NavLink to="/list" className="sidebar-option">
-          <img src={assets.order_icon} alt="" />
-          <p>List Items</p>
-        </NavLink>
-
-        <NavLink to="/orders" className="sidebar-option">
-          <img src={assets.order_icon} alt="" />
-          <p>Orders</p>
-        </NavLink>
-
-        {/* ✅ Correct routes */}
-        <NavLink to="/add-restaurant" className="sidebar-option">
-          <img src={assets.add_icon} alt="" />
-          <p>Add Restaurant</p>
-        </NavLink>
-
-        <NavLink to="/manage-restaurants" className="sidebar-option">
-          <img src={assets.order_icon} alt="" />
-          <p>Manage Restaurants</p>
-        </NavLink>
-
+      {/* Footer */}
+      <div className="sidebar-footer">
+        <SignOutButton>
+          <div className="sidebar-footer-user">
+            <div className="sidebar-footer-avatar">{initials}</div>
+            <div className="sidebar-footer-info">
+              <div className="sidebar-footer-name">{user?.fullName || "Admin"}</div>
+              <div className="sidebar-footer-role">Super Admin</div>
+            </div>
+          </div>
+        </SignOutButton>
       </div>
     </div>
   );

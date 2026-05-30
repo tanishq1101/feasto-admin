@@ -1,7 +1,14 @@
-import { toast } from "react-toastify";
 import React, { useState } from "react";
 import "./Add.css";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { PlusCircle, Image, Tag, DollarSign, AlignLeft, Layers } from "lucide-react";
+
+const CATEGORIES = [
+  "Salad", "Rolls", "Deserts", "Sandwich", "Cake",
+  "Pure Veg", "Pasta", "Noodles", "Biryani", "Pizza",
+  "Burger", "Soup", "Drinks", "Snacks", "Seafood",
+];
 
 const Add = ({ url, getToken }) => {
   const [data, setData] = useState({
@@ -11,17 +18,22 @@ const Add = ({ url, getToken }) => {
     category: "Salad",
     image: "",
   });
+  const [loading, setLoading] = useState(false);
 
-  const onChangeHandler = (event) => {
-    const { name, value } = event.target;
+  const onChange = (e) => {
+    const { name, value } = e.target;
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const onSubmitHandler = async (event) => {
-    event.preventDefault();
-
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (!data.image) {
+      toast.error("Please provide an image URL");
+      return;
+    }
+    setLoading(true);
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         `${url}/api/food/add`,
         {
           name: data.name,
@@ -30,100 +42,148 @@ const Add = ({ url, getToken }) => {
           category: data.category,
           image: data.image,
         },
-        {
-          headers: { Authorization: `Bearer ${await getToken()}` },
-        }
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
       );
-
-      if (response.data.success) {
-        toast.success("Food Added Successfully");
-        setData({
-          name: "",
-          description: "",
-          price: "",
-          category: "Salad",
-          image: "",
-        });
+      if (res.data.success) {
+        toast.success("✅ Food item added successfully!");
+        setData({ name: "", description: "", price: "", category: "Salad", image: "" });
       } else {
-        toast.error(response.data.message);
+        toast.error(res.data.message || "Failed to add item");
       }
-    } catch (error) {
-      console.error("Error adding food:", error);
-      toast.error(error.response?.data?.message || "Something went wrong.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="add">
-      <form className="flex-col" onSubmit={onSubmitHandler}>
-        <div className="add-product-image flex-col">
-          <p>Image URL</p>
-          <input
-            type="text"
-            name="image"
-            placeholder="https://example.com/image.jpg"
-            value={data.image}
-            onChange={onChangeHandler}
-            required
-          />
-        </div>
+    <div className="add-page">
+      <div className="page-header">
+        <h1>Add Food Item</h1>
+        <p>Add a new dish to the menu that will appear on the frontend</p>
+      </div>
 
-        <div className="add-product-name flex-col">
-          <p>Product name</p>
-          <input
-            onChange={onChangeHandler}
-            value={data.name}
-            type="text"
-            name="name"
-            placeholder="Type here"
-            required
-          />
-        </div>
+      <div className="add-form-card">
+        <h2>
+          <PlusCircle size={20} color="var(--accent-primary)" />
+          New Food Item
+        </h2>
 
-        <div className="add-product-description flex-col">
-          <p>Product description</p>
-          <textarea
-            onChange={onChangeHandler}
-            value={data.description}
-            name="description"
-            rows="6"
-            placeholder="Write content here"
-            required
-          ></textarea>
-        </div>
-
-        <div className="add-category-price">
-          <div className="add-category flex-col">
-            <p>Product category</p>
-            <select onChange={onChangeHandler} name="category" value={data.category}>
-              <option value="Salad">Salad</option>
-              <option value="Rolls">Rolls</option>
-              <option value="Deserts">Deserts</option>
-              <option value="Sandwich">Sandwich</option>
-              <option value="Cake">Cake</option>
-              <option value="Pure Veg">Pure Veg</option>
-              <option value="Pasta">Pasta</option>
-              <option value="Noodles">Noodles</option>
-              <option value="Biryani">Biryani</option>
-              <option value="Pizza">Pizza</option>
-            </select>
+        <form className="add-form" onSubmit={onSubmit}>
+          {/* Image URL */}
+          <div className="form-group">
+            <label className="form-label">
+              <Image size={13} style={{ display: "inline", marginRight: 5 }} />
+              Image URL
+            </label>
+            <input
+              className="form-input"
+              type="text"
+              name="image"
+              placeholder="https://example.com/food-image.jpg"
+              value={data.image}
+              onChange={onChange}
+              required
+            />
+            {/* Preview */}
+            <div className="image-preview-box">
+              {data.image ? (
+                <img
+                  src={data.image}
+                  alt="Preview"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
+                />
+              ) : null}
+              <div className="image-preview-placeholder"
+                style={{ display: data.image ? "none" : "flex" }}>
+                <Image size={32} />
+                <span>Image preview will appear here</span>
+              </div>
+            </div>
           </div>
 
-          <div className="add-price flex-col">
-            <p>Product price</p>
+          {/* Name */}
+          <div className="form-group">
+            <label className="form-label">
+              <Tag size={13} style={{ display: "inline", marginRight: 5 }} />
+              Food Name
+            </label>
             <input
-              onChange={onChangeHandler}
-              value={data.price}
-              type="number"
-              name="price"
-              placeholder="$20"
+              className="form-input"
+              type="text"
+              name="name"
+              placeholder="e.g. Margherita Pizza"
+              value={data.name}
+              onChange={onChange}
               required
             />
           </div>
-        </div>
 
-        <button type="submit" className="add-btn">ADD</button>
-      </form>
+          {/* Description */}
+          <div className="form-group">
+            <label className="form-label">
+              <AlignLeft size={13} style={{ display: "inline", marginRight: 5 }} />
+              Description
+            </label>
+            <textarea
+              className="form-input"
+              name="description"
+              rows={4}
+              placeholder="Describe the dish ingredients, taste, or preparation..."
+              value={data.description}
+              onChange={onChange}
+              required
+            />
+          </div>
+
+          {/* Category & Price */}
+          <div className="add-form-row">
+            <div className="form-group">
+              <label className="form-label">
+                <Layers size={13} style={{ display: "inline", marginRight: 5 }} />
+                Category
+              </label>
+              <select
+                className="form-input"
+                name="category"
+                value={data.category}
+                onChange={onChange}
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                <DollarSign size={13} style={{ display: "inline", marginRight: 5 }} />
+                Price (USD)
+              </label>
+              <input
+                className="form-input"
+                type="number"
+                name="price"
+                placeholder="e.g. 12.99"
+                value={data.price}
+                onChange={onChange}
+                min="0.01"
+                step="0.01"
+                required
+              />
+            </div>
+          </div>
+
+          <button type="submit" className="add-submit-btn" disabled={loading}>
+            <PlusCircle size={18} />
+            {loading ? "Adding Item..." : "Add Food Item"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
